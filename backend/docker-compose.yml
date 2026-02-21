@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: ankane/postgres-vector:latest
+    container_name: astravision-db
+    environment:
+      POSTGRES_USER: astravision
+      POSTGRES_PASSWORD: astravision_password_change_me
+      POSTGRES_DB: astravision
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U astravision"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: astravision-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    container_name: astravision-backend
+    environment:
+      FLASK_ENV: production
+      FLASK_DEBUG: "False"
+      SECRET_KEY: change_this_in_production
+      DATABASE_URL: postgresql://astravision:astravision_password_change_me@postgres:5432/astravision
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET_KEY: change_this_in_production
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:
+  redis_data:
