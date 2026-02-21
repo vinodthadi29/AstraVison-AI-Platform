@@ -64,12 +64,8 @@ export const Header = ({ translate, titleComponent }: any) => {
 export const Card = ({
   rotate,
   scale,
+  translate,
   children
-
-
-
-
-
 }: {rotate: MotionValue<number>;scale: MotionValue<number>;translate: MotionValue<number>;children: React.ReactNode;}) => {
   return (
     <motion.div
