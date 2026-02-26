@@ -132,58 +132,7 @@ def delete_image(image_id):
         return jsonify({'error': 'Internal server error'}), 500
 
 
-@images_bp.route('/search', methods=['POST'])
-@jwt_required()
-@limiter.limit("50/hour")
-def search_similar():
-    """Search for visually similar images"""
-    try:
-        user_id = get_jwt_identity()
-        
-        # Validate request data
-        try:
-            data = search_schema.load(request.get_json())
-        except ValidationError as err:
-            return jsonify({'error': err.messages}), 400
-        
-        # Perform similarity search
-        results, execution_time = similarity_service.search_similar_images(
-            user_id=user_id,
-            query_image_id=data['image_id'],
-            num_results=data['num_results'],
-            similarity_threshold=data['similarity_threshold']
-        )
-        
-        if results is None:
-            return jsonify({'error': execution_time}), 400
-        
-        # Save search results to database
-        search = similarity_service.save_search_results(
-            user_id=user_id,
-            query_image_id=data['image_id'],
-            results=results,
-            execution_time=execution_time,
-            num_results=data['num_results'],
-            similarity_threshold=data['similarity_threshold']
-        )
-        
-        return jsonify({
-            'search_id': str(search.id),
-            'query_image_id': str(data['image_id']),
-            'num_results': len(results),
-            'execution_time_ms': execution_time,
-            'results': [
-                {
-                    'image': result['image'].to_dict(),
-                    'similarity_score': result['score']
-                }
-                for result in results
-            ]
-        }), 200
-    
-    except Exception as e:
-        logger.error(f"Error in search_similar: {str(e)}")
-        return jsonify({'error': 'Internal server error'}), 500
+
 
 
 @images_bp.route('/history', methods=['GET'])

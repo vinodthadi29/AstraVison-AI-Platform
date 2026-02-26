@@ -1,3 +1,6 @@
+-- Create pgvector extension for vector embeddings
+CREATE EXTENSION IF NOT EXISTS vector;
+
 -- Create users table for authentication
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

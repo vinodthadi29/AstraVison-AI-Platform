@@ -94,22 +94,27 @@ const authenticatedFetch = async (
 export const authAPI = {
   register: async (email: string, password: string): Promise<AuthResponse> => {
     try {
+      console.log('[v0] Registering user:', email);
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
+      const responseText = await response.text();
+      console.log('[v0] Register response status:', response.status);
+      console.log('[v0] Register response:', responseText);
+
       if (!response.ok) {
-        throw new Error(`Registration failed: ${response.status}`);
+        throw new Error(`Registration failed: ${response.status} ${responseText}`);
       }
 
-      const data: ApiResponse<AuthResponse> = await response.json();
-      if (data.data) {
+      const data = JSON.parse(responseText) as ApiResponse<AuthResponse>;
+      if (data.success && data.data) {
         setStoredToken(data.data.access_token);
         return data.data;
       }
-      throw new Error('Invalid response');
+      throw new Error(data.error || 'Invalid response');
     } catch (error) {
       console.error('[v0] Register error:', error);
       throw error;
@@ -118,22 +123,27 @@ export const authAPI = {
 
   login: async (email: string, password: string): Promise<AuthResponse> => {
     try {
+      console.log('[v0] Logging in user:', email);
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
+      const responseText = await response.text();
+      console.log('[v0] Login response status:', response.status);
+      console.log('[v0] Login response:', responseText);
+
       if (!response.ok) {
-        throw new Error(`Login failed: ${response.status}`);
+        throw new Error(`Login failed: ${response.status} ${responseText}`);
       }
 
-      const data: ApiResponse<AuthResponse> = await response.json();
-      if (data.data) {
+      const data = JSON.parse(responseText) as ApiResponse<AuthResponse>;
+      if (data.success && data.data) {
         setStoredToken(data.data.access_token);
         return data.data;
       }
-      throw new Error('Invalid response');
+      throw new Error(data.error || 'Invalid response');
     } catch (error) {
       console.error('[v0] Login error:', error);
       throw error;
