@@ -4,9 +4,6 @@ import { cn } from '../../lib/utils';
 export const ContainerScroll = ({
   titleComponent,
   children
-
-
-
 }: {titleComponent: string | React.ReactNode;children: React.ReactNode;}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
