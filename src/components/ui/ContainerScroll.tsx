@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, Component } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useScroll, useTransform, motion, MotionValue } from 'framer-motion';
 import { cn } from '../../lib/utils';
 export const ContainerScroll = ({
@@ -65,11 +65,6 @@ export const Card = ({
   rotate,
   scale,
   children
-
-
-
-
-
 }: {rotate: MotionValue<number>;scale: MotionValue<number>;translate: MotionValue<number>;children: React.ReactNode;}) => {
   return (
     <motion.div
