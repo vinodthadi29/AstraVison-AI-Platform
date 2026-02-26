@@ -12,8 +12,8 @@ import {
   Sparkles,
   Activity,
   Clock,
-  Server } from
-'lucide-react';
+  Server
+} from 'lucide-react';
 export function TechnologySection() {
   return (
     <div className="w-full h-full flex flex-col md:flex-row gap-8 p-4">

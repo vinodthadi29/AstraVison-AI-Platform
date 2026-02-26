@@ -11,8 +11,8 @@ import {
   Sparkles,
   Tag,
   BarChart3,
-  Zap } from
-'lucide-react';
+  Zap
+} from 'lucide-react';
 import { FileUpload } from './ui/FileUpload';
 import { imageAPI, SearchResponse } from '../lib/api';
 const SIMILAR_IMAGES = [

@@ -7,8 +7,8 @@ import {
   Eye,
   ArrowRight,
   ShieldCheck,
-  Scan } from
-'lucide-react';
+  Scan
+} from 'lucide-react';
 import { AstraGuardian, GuardianState } from './ui/AstraGuardian';
 import { authAPI } from '../lib/api';
 
