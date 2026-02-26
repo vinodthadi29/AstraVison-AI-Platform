@@ -1,5 +1,5 @@
 // API Configuration and Client
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -41,26 +41,85 @@ interface SearchResponse {
   processing_time_ms: number;
 }
 
-// Token Management
+// In-memory token fallback
+let inMemoryToken: string | null = null;
+let inMemoryRefreshToken: string | null = null;
+
+// Safe Token Management with localStorage fallback
 const getStoredToken = (): string | null => {
-  return localStorage.getItem('auth_token');
+  try {
+    return typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+  } catch {
+    return inMemoryToken;
+  }
 };
 
 const setStoredToken = (token: string): void => {
-  localStorage.setItem('auth_token', token);
+  try {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth_token', token);
+    }
+  } catch {
+    console.warn('[v0] localStorage unavailable, using in-memory storage');
+  }
+  inMemoryToken = token;
 };
 
 const getStoredRefreshToken = (): string | null => {
-  return localStorage.getItem('refresh_token');
+  try {
+    return typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null;
+  } catch {
+    return inMemoryRefreshToken;
+  }
 };
 
 const setStoredRefreshToken = (token: string): void => {
-  localStorage.setItem('refresh_token', token);
+  try {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('refresh_token', token);
+    }
+  } catch {
+    console.warn('[v0] localStorage unavailable, using in-memory storage');
+  }
+  inMemoryRefreshToken = token;
 };
 
 const clearStoredTokens = (): void => {
-  localStorage.removeItem('auth_token');
-  localStorage.removeItem('refresh_token');
+  try {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('refresh_token');
+    }
+  } catch {
+    console.warn('[v0] Could not clear localStorage');
+  }
+  inMemoryToken = null;
+  inMemoryRefreshToken = null;
+};
+
+// Fetch with timeout and error handling
+const fetchWithTimeout = async (
+  url: string,
+  options: RequestInit = {},
+  timeoutMs: number = 10000
+): Promise<Response> => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    return response;
+  } catch (error) {
+    clearTimeout(timeout);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Request timeout - backend may be unavailable');
+    }
+    throw error;
+  }
 };
 
 // Fetch with Authorization
@@ -77,62 +136,87 @@ const authenticatedFetch = async (
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  try {
+    const response = await fetchWithTimeout(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
 
-  // Handle token expiry
-  if (response.status === 401) {
-    clearStoredTokens();
-    window.location.href = '/';
+    // Handle token expiry
+    if (response.status === 401) {
+      clearStoredTokens();
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
+    }
+
+    return response;
+  } catch (error) {
+    console.error('[v0] API call failed:', error);
+    throw error;
   }
-
-  return response;
 };
 
 // Auth API
 export const authAPI = {
   register: async (email: string, password: string): Promise<AuthResponse> => {
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const response = await fetchWithTimeout(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Registration failed');
-    }
+      if (!response.ok) {
+        try {
+          const error = await response.json();
+          throw new Error(error.error || `Registration failed: ${response.status}`);
+        } catch {
+          throw new Error(`Registration failed: ${response.status}`);
+        }
+      }
 
-    const data: ApiResponse<AuthResponse> = await response.json();
-    if (data.data) {
-      setStoredToken(data.data.access_token);
-      setStoredRefreshToken(data.data.refresh_token);
-      return data.data;
+      const data: ApiResponse<AuthResponse> = await response.json();
+      if (data.data) {
+        setStoredToken(data.data.access_token);
+        setStoredRefreshToken(data.data.refresh_token);
+        return data.data;
+      }
+      throw new Error('Invalid response format');
+    } catch (error) {
+      console.error('[v0] Registration error:', error);
+      throw error;
     }
-    throw new Error('Invalid response format');
   },
 
   login: async (email: string, password: string): Promise<AuthResponse> => {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const response = await fetchWithTimeout(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Login failed');
-    }
+      if (!response.ok) {
+        try {
+          const error = await response.json();
+          throw new Error(error.error || `Login failed: ${response.status}`);
+        } catch {
+          throw new Error(`Login failed: ${response.status}`);
+        }
+      }
 
-    const data: ApiResponse<AuthResponse> = await response.json();
-    if (data.data) {
-      setStoredToken(data.data.access_token);
-      setStoredRefreshToken(data.data.refresh_token);
-      return data.data;
+      const data: ApiResponse<AuthResponse> = await response.json();
+      if (data.data) {
+        setStoredToken(data.data.access_token);
+        setStoredRefreshToken(data.data.refresh_token);
+        return data.data;
+      }
+      throw new Error('Invalid response format');
+    } catch (error) {
+      console.error('[v0] Login error:', error);
+      throw error;
     }
-    throw new Error('Invalid response format');
   },
 
   logout: async (): Promise<void> => {
@@ -258,16 +342,24 @@ export const imageAPI = {
   },
 };
 
-// Health Check
+// Health Check with timeout
 export const healthAPI = {
   check: async (): Promise<boolean> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/health`, {
+      const response = await fetchWithTimeout(`${API_BASE_URL}/health`, {
         method: 'GET',
-      });
+      }, 5000);
       return response.ok;
-    } catch {
+    } catch (error) {
+      console.warn('[v0] Backend health check failed:', error);
       return false;
     }
   },
+};
+
+// Backend status monitoring
+let isBackendAvailable = true;
+export const getBackendStatus = (): boolean => isBackendAvailable;
+export const setBackendStatus = (status: boolean): void => {
+  isBackendAvailable = status;
 };

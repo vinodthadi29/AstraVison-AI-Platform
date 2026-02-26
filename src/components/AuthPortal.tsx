@@ -81,15 +81,31 @@ export function AuthPortal({ isOpen, onClose }: AuthPortalProps) {
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email || !password) {
+      alert('Please enter email and password');
+      return;
+    }
+
     setGuardianState('scanning');
     setTypingActivity(0);
 
     try {
       // Try to login first, then register if user doesn't exist
       try {
+        console.log('[v0] Attempting login...');
         await authAPI.login(email, password);
+        console.log('[v0] Login successful');
       } catch (loginError) {
-        await authAPI.register(email, password);
+        console.log('[v0] Login failed, attempting registration...', loginError);
+        try {
+          await authAPI.register(email, password);
+          console.log('[v0] Registration successful');
+        } catch (regError) {
+          throw new Error(
+            loginError instanceof Error ? loginError.message : 'Login and registration failed'
+          );
+        }
       }
 
       setTimeout(() => {
@@ -100,7 +116,9 @@ export function AuthPortal({ isOpen, onClose }: AuthPortalProps) {
       }, 1500);
     } catch (error) {
       setGuardianState('idle');
-      alert(`Authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('[v0] Auth error:', errorMessage);
+      alert(`Authentication failed: ${errorMessage}. Please ensure backend is running.`);
     }
   };
   const handleClose = () => {

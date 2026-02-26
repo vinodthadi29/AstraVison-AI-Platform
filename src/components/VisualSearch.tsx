@@ -159,15 +159,26 @@ export function VisualSearch() {
         setProgress(Math.floor(p));
       }, 200);
 
-      // Upload and search
-      setStatus('scanning');
-      const results = await imageAPI.searchByUpload(files[0], 6);
-      clearInterval(progressInterval);
-      setSearchResults(results);
-      setProgress(100);
-      setStatus('analyzed');
+      try {
+        // Upload and search
+        setStatus('scanning');
+        const results = await imageAPI.searchByUpload(files[0], 6);
+        clearInterval(progressInterval);
+        setSearchResults(results);
+        setProgress(100);
+        setStatus('analyzed');
+      } catch (apiError) {
+        clearInterval(progressInterval);
+        const errorMessage = apiError instanceof Error ? apiError.message : 'Upload failed';
+        console.error('[v0] Upload error:', errorMessage);
+        setError(`Error: ${errorMessage}. Please ensure backend is running on ${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}`);
+        setStatus('idle');
+        setProgress(0);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed');
+      const errorMessage = err instanceof Error ? err.message : 'Upload failed';
+      console.error('[v0] File handling error:', errorMessage);
+      setError(`File error: ${errorMessage}`);
       setStatus('idle');
     }
   };
@@ -195,6 +206,38 @@ export function VisualSearch() {
         </div>
 
         <div className="relative">
+          {/* Error Display */}
+          {error &&
+          <motion.div
+            initial={{
+              opacity: 0,
+              y: -10
+            }}
+            animate={{
+              opacity: 1,
+              y: 0
+            }}
+            exit={{
+              opacity: 0,
+              y: -10
+            }}
+            className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/30 flex items-start gap-3">
+
+              <div className="w-1 h-1 rounded-full bg-red-400 mt-2 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-red-300 break-words">
+                  {error}
+                </p>
+              </div>
+              <button
+              onClick={() => setError(null)}
+              className="text-red-400 hover:text-red-300 transition-colors shrink-0"
+            >
+                ✕
+              </button>
+            </motion.div>
+          }
+
           <AnimatePresence mode="wait">
             {status === 'idle' &&
             <motion.div
