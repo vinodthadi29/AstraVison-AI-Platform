@@ -101,7 +101,7 @@ export function AuthPortal({ isOpen, onClose }: AuthPortalProps) {
         try {
           await authAPI.register(email, password);
           console.log('[v0] Registration successful');
-        } catch (regError) {
+        } catch {
           throw new Error(
             loginError instanceof Error ? loginError.message : 'Login and registration failed'
           );
