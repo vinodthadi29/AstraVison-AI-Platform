@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LayoutGrid, Search, Cpu, Users, Layers } from 'lucide-react';
+import { LayoutGrid, Search, Cpu, Users, Layers, Zap, Eye, Network, Brain } from 'lucide-react';
+import { AtmosphericBackground } from './components/AtmosphericBackground';
+import { AIEntities } from './components/AIEntities';
+import { GlobeHero } from './components/ui/GlobeHero';
+import { AnimeNavBar } from './components/ui/AnimeNavBar';
+import { ContainerScroll } from './components/ui/ContainerScroll';
+import { TeamShuffle } from './components/ui/TeamShuffle';
 
 const navItems = [
   { id: 'home', label: 'Home', icon: LayoutGrid },
@@ -11,11 +17,11 @@ const navItems = [
 ];
 
 const teamMembers = [
-  { id: 1, name: 'Aswinitha Patta', role: 'Team Lead & Backend', quote: 'Building robust systems.' },
-  { id: 2, name: 'Adilsha Khan Pathan', role: 'Model Training', quote: 'Training neural networks.' },
-  { id: 3, name: 'Vinod Thadi', role: 'Product Architect', quote: 'Designing scalable systems.' },
-  { id: 4, name: 'Ajay Jada', role: 'Frontend', quote: 'Crafting seamless experiences.' },
-  { id: 5, name: 'Venkatesh Sunkara', role: 'API Integration', quote: 'Connecting systems.' }
+  { id: 1, name: 'Aswinitha Patta', role: 'Team Lead & Backend', quote: 'Building robust systems.', color: 'bg-astra-violet' },
+  { id: 2, name: 'Adilsha Khan Pathan', role: 'Model Training', quote: 'Training neural networks.', color: 'bg-astra-blue' },
+  { id: 3, name: 'Vinod Thadi', role: 'Product Architect', quote: 'Designing scalable systems.', color: 'bg-gradient-to-br from-astra-violet to-astra-blue' },
+  { id: 4, name: 'Ajay Jada', role: 'Frontend', quote: 'Crafting seamless experiences.', color: 'bg-astra-violet/50' },
+  { id: 5, name: 'Venkatesh Sunkara', role: 'API Integration', quote: 'Connecting systems.', color: 'bg-astra-blue/50' }
 ];
 
 export function App() {
@@ -26,121 +32,134 @@ export function App() {
     switch (activeTab) {
       case 'home':
         return (
-          <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-            <div className="text-center max-w-4xl mx-auto px-4">
-              <h1 className="text-6xl md:text-7xl font-bold text-white mb-6">
-                AstraVision
-              </h1>
-              <p className="text-xl text-gray-300 mb-8">
-                AI-Powered Spatial Intelligence Platform
-              </p>
-              <p className="text-lg text-gray-400 mb-12">
-                Advanced visual search, object detection, and model explainability
-              </p>
-              <button
-                onClick={() => setIsAuthOpen(true)}
-                className="px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-all"
-              >
-                Enter System
-              </button>
-            </div>
+          <div className="relative w-full min-h-screen bg-astra-bg">
+            <AtmosphericBackground />
+            <AIEntities />
+            <GlobeHero onEnterSystem={() => setIsAuthOpen(true)} />
           </div>
         );
 
       case 'search':
         return (
-          <div className="min-h-screen flex flex-col items-center justify-center bg-slate-900 px-4">
-            <h2 className="text-4xl font-bold text-white mb-8">Visual Search</h2>
-            <div className="bg-slate-800 rounded-lg p-8 max-w-2xl w-full">
-              <p className="text-gray-300 text-center">
-                Upload an image to search for similar images using advanced AI embeddings.
-              </p>
-              <div className="mt-8 border-2 border-dashed border-purple-500 rounded-lg p-12 text-center">
-                <p className="text-gray-400">Drag and drop your image here</p>
+          <div className="relative w-full min-h-screen bg-astra-bg flex flex-col items-center justify-center px-4 py-20">
+            <AtmosphericBackground />
+            <AIEntities />
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative z-10 max-w-2xl w-full">
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-8 text-center">Visual Search</h2>
+              <div className="bg-black/40 border border-astra-violet/30 rounded-2xl p-8 backdrop-blur-xl">
+                <p className="text-astra-text-secondary text-center mb-8 text-lg">
+                  Upload an image to search for similar images using advanced AI embeddings.
+                </p>
+                <div className="mt-8 border-2 border-dashed border-astra-violet/40 rounded-xl p-12 text-center hover:border-astra-violet/60 transition-colors cursor-pointer">
+                  <Search className="w-12 h-12 text-astra-violet/60 mx-auto mb-3" />
+                  <p className="text-astra-text-secondary">Drag and drop your image here</p>
+                </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         );
 
       case 'features':
         return (
-          <div className="min-h-screen bg-slate-900 py-20 px-4">
-            <div className="max-w-6xl mx-auto">
-              <h2 className="text-4xl font-bold text-white mb-16 text-center">Features</h2>
-              <div className="grid md:grid-cols-2 gap-8">
-                <div className="bg-slate-800 rounded-lg p-6">
-                  <h3 className="text-xl font-semibold text-purple-400 mb-3">Visual Search</h3>
-                  <p className="text-gray-300">Find similar images using deep learning embeddings with MobileNetV2.</p>
-                </div>
-                <div className="bg-slate-800 rounded-lg p-6">
-                  <h3 className="text-xl font-semibold text-purple-400 mb-3">Object Detection</h3>
-                  <p className="text-gray-300">Real-time detection with YOLOv8 and bounding box annotation.</p>
-                </div>
-                <div className="bg-slate-800 rounded-lg p-6">
-                  <h3 className="text-xl font-semibold text-purple-400 mb-3">Model Explainability</h3>
-                  <p className="text-gray-300">Grad-CAM heatmaps showing what the model "sees".</p>
-                </div>
-                <div className="bg-slate-800 rounded-lg p-6">
-                  <h3 className="text-xl font-semibold text-purple-400 mb-3">Secure Auth</h3>
-                  <p className="text-gray-300">JWT authentication with token refresh and secure storage.</p>
-                </div>
+          <div className="relative w-full min-h-screen bg-astra-bg">
+            <AtmosphericBackground />
+            <ContainerScroll titleComponent={
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                Core Capabilities
+              </h2>
+            }>
+              <div className="grid md:grid-cols-2 gap-6 p-6 md:p-8">
+                <motion.div className="bg-black/40 border border-white/10 rounded-xl p-6 backdrop-blur-xl hover:border-astra-violet/50 transition-colors">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Eye className="w-6 h-6 text-astra-violet" />
+                    <h3 className="text-xl font-semibold text-white">Visual Search</h3>
+                  </div>
+                  <p className="text-astra-text-secondary">Find similar images using deep learning embeddings with MobileNetV2 neural networks.</p>
+                </motion.div>
+                <motion.div className="bg-black/40 border border-white/10 rounded-xl p-6 backdrop-blur-xl hover:border-astra-blue/50 transition-colors">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Zap className="w-6 h-6 text-astra-blue" />
+                    <h3 className="text-xl font-semibold text-white">Object Detection</h3>
+                  </div>
+                  <p className="text-astra-text-secondary">Real-time detection with YOLOv8 and advanced bounding box annotation capabilities.</p>
+                </motion.div>
+                <motion.div className="bg-black/40 border border-white/10 rounded-xl p-6 backdrop-blur-xl hover:border-astra-violet/50 transition-colors">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Brain className="w-6 h-6 text-astra-violet" />
+                    <h3 className="text-xl font-semibold text-white">Model Explainability</h3>
+                  </div>
+                  <p className="text-astra-text-secondary">Grad-CAM heatmaps revealing what the model perceives in every image.</p>
+                </motion.div>
+                <motion.div className="bg-black/40 border border-white/10 rounded-xl p-6 backdrop-blur-xl hover:border-astra-blue/50 transition-colors">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Network className="w-6 h-6 text-astra-blue" />
+                    <h3 className="text-xl font-semibold text-white">Secure Architecture</h3>
+                  </div>
+                  <p className="text-astra-text-secondary">JWT authentication with token refresh and enterprise-grade security protocols.</p>
+                </motion.div>
               </div>
-            </div>
+            </ContainerScroll>
           </div>
         );
 
       case 'technology':
         return (
-          <div className="min-h-screen bg-slate-900 py-20 px-4">
-            <div className="max-w-6xl mx-auto">
-              <h2 className="text-4xl font-bold text-white mb-16 text-center">Technology Stack</h2>
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className="bg-slate-800 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-purple-400 mb-3">Frontend</h3>
-                  <ul className="text-gray-300 space-y-2">
-                    <li>React 18</li>
-                    <li>TypeScript</li>
-                    <li>Vite</li>
-                    <li>TailwindCSS</li>
+          <div className="relative w-full min-h-screen bg-astra-bg py-20 px-4">
+            <AtmosphericBackground />
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative z-10 max-w-6xl mx-auto">
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-16 text-center">Technology Stack</h2>
+              <div className="grid md:grid-cols-3 gap-8">
+                <motion.div whileHover={{ y: -10, borderColor: 'rgba(139, 92, 246, 0.5)' }} className="bg-black/40 border border-astra-violet/20 rounded-xl p-8 backdrop-blur-xl transition-all hover:shadow-lg hover:shadow-astra-violet/20">
+                  <h3 className="text-lg font-semibold text-astra-violet mb-6 flex items-center gap-2">
+                    <Layers className="w-5 h-5" /> Frontend
+                  </h3>
+                  <ul className="text-astra-text-secondary space-y-3 font-mono text-sm">
+                    <li>• React 18</li>
+                    <li>• TypeScript</li>
+                    <li>• Vite</li>
+                    <li>• TailwindCSS</li>
+                    <li>• Framer Motion</li>
                   </ul>
-                </div>
-                <div className="bg-slate-800 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-purple-400 mb-3">Backend</h3>
-                  <ul className="text-gray-300 space-y-2">
-                    <li>Flask</li>
-                    <li>PostgreSQL</li>
-                    <li>pgvector</li>
-                    <li>SQLAlchemy</li>
+                </motion.div>
+                <motion.div whileHover={{ y: -10, borderColor: 'rgba(59, 130, 246, 0.5)' }} className="bg-black/40 border border-astra-blue/20 rounded-xl p-8 backdrop-blur-xl transition-all hover:shadow-lg hover:shadow-astra-blue/20">
+                  <h3 className="text-lg font-semibold text-astra-blue mb-6 flex items-center gap-2">
+                    <Network className="w-5 h-5" /> Backend
+                  </h3>
+                  <ul className="text-astra-text-secondary space-y-3 font-mono text-sm">
+                    <li>• Flask 3.0</li>
+                    <li>• PostgreSQL 14+</li>
+                    <li>• pgvector</li>
+                    <li>• SQLAlchemy</li>
+                    <li>• Gunicorn</li>
                   </ul>
-                </div>
-                <div className="bg-slate-800 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-purple-400 mb-3">AI/ML</h3>
-                  <ul className="text-gray-300 space-y-2">
-                    <li>TensorFlow</li>
-                    <li>YOLOv8</li>
-                    <li>OpenCV</li>
-                    <li>PyTorch</li>
+                </motion.div>
+                <motion.div whileHover={{ y: -10, borderColor: 'rgba(139, 92, 246, 0.5)' }} className="bg-black/40 border border-astra-violet/20 rounded-xl p-8 backdrop-blur-xl transition-all hover:shadow-lg hover:shadow-astra-violet/20">
+                  <h3 className="text-lg font-semibold text-astra-violet mb-6 flex items-center gap-2">
+                    <Brain className="w-5 h-5" /> AI/ML
+                  </h3>
+                  <ul className="text-astra-text-secondary space-y-3 font-mono text-sm">
+                    <li>• TensorFlow 2.14</li>
+                    <li>• YOLOv8</li>
+                    <li>• OpenCV</li>
+                    <li>• PyTorch</li>
+                    <li>• Scikit-learn</li>
                   </ul>
-                </div>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
           </div>
         );
 
       case 'team':
         return (
-          <div className="min-h-screen bg-slate-900 py-20 px-4">
-            <div className="max-w-6xl mx-auto">
-              <h2 className="text-4xl font-bold text-white mb-16 text-center">The Team</h2>
-              <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
-                {teamMembers.map((member) => (
-                  <div key={member.id} className="bg-slate-800 rounded-lg p-6 text-center">
-                    <h3 className="text-lg font-semibold text-white mb-2">{member.name}</h3>
-                    <p className="text-purple-400 text-sm mb-3">{member.role}</p>
-                    <p className="text-gray-400 text-sm italic">"{member.quote}"</p>
-                  </div>
-                ))}
-              </div>
+          <div className="relative w-full min-h-screen bg-astra-bg py-20">
+            <AtmosphericBackground />
+            <div className="relative z-10 max-w-6xl mx-auto">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
+                <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Meet the Team</h2>
+                <p className="text-astra-text-secondary text-lg">Exceptional minds building the future of spatial intelligence</p>
+              </motion.div>
+              <TeamShuffle members={teamMembers} />
             </div>
           </div>
         );
@@ -151,52 +170,19 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-slate-900 text-white selection:bg-purple-600/30">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-purple-500/20">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-              <Cpu className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-xl font-bold">AstraVision</span>
-          </div>
-
-          <div className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
-                  activeTab === item.id
-                    ? 'bg-purple-600 text-white'
-                    : 'text-gray-300 hover:bg-slate-800'
-                }`}
-              >
-                <item.icon className="w-4 h-4" />
-                <span className="text-sm">{item.label}</span>
-              </button>
-            ))}
-          </div>
-
-          <button
-            onClick={() => setIsAuthOpen(!isAuthOpen)}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm font-medium transition-all"
-          >
-            {isAuthOpen ? 'Close' : 'Login'}
-          </button>
-        </div>
-      </nav>
+    <div className="min-h-screen w-full bg-astra-bg text-white selection:bg-astra-violet/30">
+      {/* Anime Navigation Bar */}
+      <AnimeNavBar items={navItems} activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* Main Content */}
-      <main className="relative pt-16">
+      <main className="relative">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.4 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
           >
             {renderSection()}
           </motion.div>
@@ -210,38 +196,44 @@ export function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/60 backdrop-blur-md z-40 flex items-center justify-center p-4"
             onClick={() => setIsAuthOpen(false)}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-slate-800 rounded-2xl p-8 max-w-md w-full border border-purple-500/20"
+              className="bg-black/60 border border-astra-violet/30 rounded-2xl p-8 max-w-md w-full backdrop-blur-xl shadow-2xl"
             >
-              <h2 className="text-2xl font-bold text-white mb-6">Authentication</h2>
+              <h2 className="text-3xl font-bold text-white mb-8 text-center">System Access</h2>
 
-              <div className="space-y-4 mb-6">
+              <div className="space-y-4 mb-8">
                 <input
                   type="email"
                   placeholder="Email"
-                  className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
+                  className="w-full px-4 py-3 bg-white/5 border border-astra-violet/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-astra-violet focus:bg-white/10 transition-all"
                 />
                 <input
                   type="password"
                   placeholder="Password"
-                  className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
+                  className="w-full px-4 py-3 bg-white/5 border border-astra-violet/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-astra-violet focus:bg-white/10 transition-all"
                 />
               </div>
 
-              <button className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-all mb-3">
+              <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full px-4 py-3 bg-gradient-to-r from-astra-violet to-astra-blue text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-astra-violet/50 transition-all mb-3">
                 Login
-              </button>
+              </motion.button>
 
-              <button className="w-full px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-all">
+              <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full px-4 py-3 border border-astra-violet/30 text-white font-semibold rounded-lg hover:bg-astra-violet/10 transition-all">
                 Register
-              </button>
+              </motion.button>
             </motion.div>
           </motion.div>
         )}
