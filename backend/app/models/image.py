@@ -1,6 +1,6 @@
 from app.extensions import db
 from datetime import datetime
-from sqlalchemy.dialects.postgresql import UUID, BYTEA
+from sqlalchemy.dialects.postgresql import UUID, BYTEA, JSON
 import uuid
 
 
@@ -20,6 +20,10 @@ class Image(db.Model):
     # Embedding vector
     embedding = db.Column(db.LargeBinary)  # Stored as serialized numpy array or PostgreSQL vector
     embedding_model = db.Column(db.String(50), default='mobilenetv2')
+    
+    # Detection and explainability
+    detected_objects = db.Column(JSON)  # JSONB storing YOLO detection results
+    heatmap_path = db.Column(db.String(512))  # Path to Grad-CAM heatmap image
     
     # Metadata
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
@@ -45,6 +49,8 @@ class Image(db.Model):
             'width': self.width,
             'height': self.height,
             'embedding_model': self.embedding_model,
+            'detected_objects': self.detected_objects,
+            'heatmap_path': self.heatmap_path,
             'uploaded_at': self.uploaded_at.isoformat(),
             'processed_at': self.processed_at.isoformat() if self.processed_at else None
         }

@@ -1,8 +1,12 @@
 import os
 from datetime import timedelta
 from dotenv import load_dotenv
+from app.config.ai_config import AIConfig
 
 load_dotenv()
+
+# Initialize AI configuration folders on startup
+AIConfig.initialize_folders()
 
 
 class Config:

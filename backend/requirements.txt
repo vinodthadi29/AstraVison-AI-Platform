@@ -22,3 +22,5 @@ celery==5.3.4
 redis==5.0.1
 pgvector==0.2.4
 faiss-cpu==1.7.4
+ultralytics==8.0.204
+matplotlib==3.8.2

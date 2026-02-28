@@ -1,6 +1,6 @@
 from app.models import Image
 from app.extensions import db
-from app.ai import get_embedding_service
+from app.ai import get_embedding_service, get_detection_service, get_gradcam_service
 import logging
 import os
 from werkzeug.utils import secure_filename
@@ -183,3 +183,111 @@ class ImageService:
         except Exception as e:
             logger.error(f"Error in batch processing: {str(e)}")
             return 0
+    
+    def process_image_detection(self, image_id, user_id, create_annotated=False):
+        """Process image and perform YOLO object detection"""
+        try:
+            image = Image.query.filter_by(id=image_id, user_id=user_id).first()
+            if not image:
+                return False, "Image not found"
+            
+            if not os.path.exists(image.file_path):
+                return False, "Image file not found"
+            
+            # Get detection service
+            detection_service = get_detection_service()
+            
+            # Perform detection
+            detection_results = detection_service.detect(image.file_path)
+            
+            # Save detection results to image record
+            image.detected_objects = detection_results
+            
+            # Optionally create annotated image
+            if create_annotated:
+                annotated_path = f"./uploads/annotated/{image.id}_detected.png"
+                os.makedirs(os.path.dirname(annotated_path), exist_ok=True)
+                detection_service.annotate_image(
+                    image_path=image.file_path,
+                    output_path=annotated_path,
+                    detections=detection_results,
+                    draw_labels=True
+                )
+            
+            db.session.commit()
+            logger.info(f"Detection completed for image {image_id}")
+            return True, None
+        
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error processing detection: {str(e)}")
+            return False, str(e)
+    
+    def process_image_heatmap(self, image_id, user_id, blend_alpha=0.4, colormap='jet'):
+        """Process image and generate Grad-CAM heatmap"""
+        try:
+            image = Image.query.filter_by(id=image_id, user_id=user_id).first()
+            if not image:
+                return False, "Image not found"
+            
+            if not os.path.exists(image.file_path):
+                return False, "Image file not found"
+            
+            # Get Grad-CAM service
+            gradcam_service = get_gradcam_service()
+            
+            # Generate heatmap
+            heatmap_path = f"./uploads/heatmaps/{image.id}_gradcam.png"
+            os.makedirs(os.path.dirname(heatmap_path), exist_ok=True)
+            
+            heatmap_image, saved_path = gradcam_service.generate_heatmap(
+                image_path=image.file_path,
+                output_path=heatmap_path,
+                blend_alpha=blend_alpha,
+                colormap=colormap
+            )
+            
+            # Save heatmap path to image record
+            image.heatmap_path = saved_path
+            
+            db.session.commit()
+            logger.info(f"Heatmap generated for image {image_id}")
+            return True, None
+        
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error processing heatmap: {str(e)}")
+            return False, str(e)
+    
+    def process_full_analysis(self, image_id, user_id):
+        """Perform complete image analysis: embedding + detection + heatmap"""
+        try:
+            image = Image.query.filter_by(id=image_id, user_id=user_id).first()
+            if not image:
+                return False, "Image not found"
+            
+            if not os.path.exists(image.file_path):
+                return False, "Image file not found"
+            
+            # Step 1: Process embedding
+            success, error = self.process_image_embedding(image_id, user_id)
+            if not success:
+                logger.warning(f"Embedding processing failed: {error}")
+            
+            # Step 2: Process detection with annotated image
+            success, error = self.process_image_detection(image_id, user_id, create_annotated=True)
+            if not success:
+                logger.warning(f"Detection processing failed: {error}")
+            
+            # Step 3: Process heatmap
+            success, error = self.process_image_heatmap(image_id, user_id)
+            if not success:
+                logger.warning(f"Heatmap processing failed: {error}")
+            
+            logger.info(f"Full analysis completed for image {image_id}")
+            return True, None
+        
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error in full analysis: {str(e)}")
+            return False, str(e)
