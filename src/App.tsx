@@ -24,18 +24,45 @@ const teamMembers = [
   { id: 5, name: 'Venkatesh Sunkara', role: 'API Integration', quote: 'Connecting systems.', color: 'bg-astra-blue/50' }
 ];
 
-export function App() {
-  const [activeTab, setActiveTab] = useState('home');
+import { AuthProvider, useAuth } from './context/AuthContext';
+import AuthModal from './components/AuthModal';
+import Dashboard from './components/Dashboard';
+import UploadArea from './components/UploadArea';
+import LandingPage from './components/LandingPage';
+
+function AppContent() {
+  const { user, logout } = useAuth();
+  const [activeTab, setActiveTab] = useState(user ? 'dashboard' : 'home');
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   const renderSection = () => {
+    if (!user) {
+      return <LandingPage onOpenAuth={() => setIsAuthOpen(true)} />;
+    }
+
     switch (activeTab) {
+      case 'dashboard':
+        return <Dashboard />;
+      case 'upload':
+        return <UploadArea />;
       case 'home':
         return (
-          <div className="relative w-full min-h-screen bg-astra-bg">
+          <div className="relative w-full min-h-screen bg-astra-bg pt-20">
             <AtmosphericBackground />
             <AIEntities />
-            <GlobeHero onEnterSystem={() => setIsAuthOpen(true)} />
+            <div className="relative z-10 max-w-4xl mx-auto px-4 py-20">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
+                <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">Welcome Back</h1>
+                <p className="text-xl text-astra-text-secondary mb-8">Start exploring your images with AI-powered visual search</p>
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  onClick={() => setActiveTab('upload')}
+                  className="px-8 py-4 bg-gradient-to-r from-astra-violet to-astra-blue rounded-lg font-semibold text-white hover:shadow-lg hover:shadow-astra-violet/50 transition-all"
+                >
+                  Upload Images
+                </motion.button>
+              </motion.div>
+            </div>
           </div>
         );
 
@@ -169,13 +196,55 @@ export function App() {
     }
   };
 
+  if (!user) {
+    return (
+      <div className="min-h-screen w-full bg-astra-bg text-white selection:bg-astra-violet/30">
+        {renderSection()}
+        <AnimatePresence>
+          {isAuthOpen && <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen w-full bg-astra-bg text-white selection:bg-astra-violet/30">
-      {/* Anime Navigation Bar */}
-      <AnimeNavBar items={navItems} activeTab={activeTab} setActiveTab={setActiveTab} />
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/40 backdrop-blur-md border-b border-astra-violet/20">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-astra-violet to-astra-blue bg-clip-text text-transparent">
+            AstraVision
+          </h1>
+          <div className="hidden md:flex items-center gap-2">
+            {[
+              { id: 'dashboard', label: 'Dashboard', icon: Home },
+              { id: 'upload', label: 'Upload', icon: Upload },
+              { id: 'search', label: 'Search', icon: Search }
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
+                  activeTab === item.id
+                    ? 'bg-astra-violet/30 text-white border border-astra-violet/50'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <item.icon className="w-4 h-4" />
+                <span className="text-sm">{item.label}</span>
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={logout}
+            className="flex items-center gap-2 px-4 py-2 bg-red-600/20 hover:bg-red-600/30 border border-red-600/30 rounded-lg text-red-400 text-sm transition-all"
+          >
+            <LogOut className="w-4 h-4" />
+            Logout
+          </button>
+        </div>
+      </nav>
 
-      {/* Main Content */}
-      <main className="relative">
+      <main className="pt-20">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -188,56 +257,14 @@ export function App() {
           </motion.div>
         </AnimatePresence>
       </main>
-
-      {/* Auth Modal */}
-      <AnimatePresence>
-        {isAuthOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-md z-40 flex items-center justify-center p-4"
-            onClick={() => setIsAuthOpen(false)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-black/60 border border-astra-violet/30 rounded-2xl p-8 max-w-md w-full backdrop-blur-xl shadow-2xl"
-            >
-              <h2 className="text-3xl font-bold text-white mb-8 text-center">System Access</h2>
-
-              <div className="space-y-4 mb-8">
-                <input
-                  type="email"
-                  placeholder="Email"
-                  className="w-full px-4 py-3 bg-white/5 border border-astra-violet/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-astra-violet focus:bg-white/10 transition-all"
-                />
-                <input
-                  type="password"
-                  placeholder="Password"
-                  className="w-full px-4 py-3 bg-white/5 border border-astra-violet/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-astra-violet focus:bg-white/10 transition-all"
-                />
-              </div>
-
-              <motion.button 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full px-4 py-3 bg-gradient-to-r from-astra-violet to-astra-blue text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-astra-violet/50 transition-all mb-3">
-                Login
-              </motion.button>
-
-              <motion.button 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full px-4 py-3 border border-astra-violet/30 text-white font-semibold rounded-lg hover:bg-astra-violet/10 transition-all">
-                Register
-              </motion.button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
